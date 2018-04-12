@@ -4,6 +4,7 @@
  */
 
 #include<sys/types.h>
+#include <sys/wait.h>
 #include<unistd.h>
 #include<stdlib.h>
 #include <string.h>
@@ -11,129 +12,132 @@
 #include <malloc.h>
 #include <stdlib.h>
 
-    struct node
-    {
-        int val;
-        	int head;
-        char* name;
-        struct node *nextJob;
-    };
-    typedef struct node JOB;
-    void addToList(JOB** list, pid_t pid, char* name, int size);
-    void refreshList(JOB** list);
-    void deleteAll(JOB** list);
-    void printList(JOB** list);
+struct node {
+	int val;
+  int head;//indicate if its the first node=head.
+  char* name;
+  struct node *nextJob;
+};
+typedef struct node JOB;
 
+void addToList(JOB** list, pid_t pid, char* name, int size);
+void refreshList(JOB** list);
+void deleteAll(JOB** list);
+void printList(JOB** list);
+void checkCd(char* string, char* pathDirection[]);
+const int SIZE = 1000;
 
-int main(char* args) {
-	char argumant[250];
-	char copy[250];
+int main(int argc, char *argv[]) {
+	char argumant[SIZE], copy[SIZE], prompt[8] = "prompt>";
 	char* token;
-	char **arrayArgs=NULL;
-	int exit = 1, i;
+	char*arrayArgs[SIZE];
+	int exit = 1, i, val;
 	JOB* list = NULL;
 	pid_t value;
-	char prompt[8] = "prompt>";
 
-	while(exit) {
-		i=0;
-		//***get from user the command, copy it for backup and split to words***
+	while(exit) {//run untill you need to stop
+		i = 0;
+		/***first step: get from user the command, copy it
+		 * 	for backup and split to words.
+		 *	this step is not inside a function for convice reasons.
+		 * ***/
 		printf("%s", prompt);
-		fgets(argumant, 250, stdin);
+		fgets(argumant, SIZE, stdin);
 		//delete space
 		argumant[strlen(argumant) - 1] = 0;
 		strcpy(copy, argumant);
 		token =  strtok(argumant, " ");
 		/* split string and append tokens to 'arrayArgs' */
 		while (token) {
-		  arrayArgs = realloc (arrayArgs, sizeof (char*) * ++i);
-		  if (arrayArgs == NULL) {
-		    /* memory allocation failed */
-		    deleteAll(&list);
-		    return (-1);
-		  }
-		  arrayArgs[i-1] = token;
+			arrayArgs[i] = token;
 			token = strtok (NULL, " ");
+			i++;
 		}
-			/* realloc one extra element for the last NULL */
-			arrayArgs = realloc (arrayArgs, sizeof (char*) * (i+1));
-			arrayArgs[i] = 0;
+	 /*one extra element for the last NULL**/
+		arrayArgs[i] = 0;
 
-
-			//check users command//
-
-		if(strcmp("jobs", *arrayArgs) == 0) {
+	/**Second Part: check users command.*/
+			//print jobs list the currently running
+		if(strcmp("jobs", arrayArgs[0]) == 0) {
 			//refresh jobs in list
 			refreshList(&list);
 			//print the jobs
 			printList(&list);
-
-		}else if(strcmp("exit", *arrayArgs) == 0) {
+			//print the PID prossess and exit
+		}else if(strcmp("exit", arrayArgs[0]) == 0) {
 			exit = 0;
 			printf("%d\n",getpid());
 			deleteAll(&list);
 
+			//cd commend wont create fork.
 		}	else if(strcmp(arrayArgs[0],"cd")== 0) {
 			printf("%d\n",getpid());
-			if(arrayArgs[1] == 0)//no path-go  back to home
-				chdir(getenv("HOME"));
-			else//go to path
-			  chdir(arrayArgs[1]);
-
-  	} else if(strcmp(arrayArgs[0], "cd~") == 0) {
-		printf("%d\n",getpid());
-
-		} else if(strcmp(arrayArgs[0], "cd-") == 0) {
-			printf("%d\n",getpid());
-
-		} else if(strcmp(arrayArgs[0], "cd..") == 0) {
-
-		}else {//any other command
+			checkCd(copy, arrayArgs);
+		}else {//any other command-create a fork.
 			value = fork();
 			if(value < 0) {
-							//error
-		  } else if(value == 0) {//child
+				//error
+				fprintf(stderr, "Error in system call\n");
+		  } else if(value == 0) {//child pro
 				if(strcmp(arrayArgs[i - 1], "&") == 0) {
 					arrayArgs[i - 1] = 0;
 					}
-			  execvp(*arrayArgs, arrayArgs);
-			  return 0;//not suppose to return to here.
-
-		  } else {
-				//print id number
+			  if(execvp(arrayArgs[0], arrayArgs) < 0) {
+				  fprintf(stderr, "Error in system call\n");
+			    return 0;//not suppose to return to here.
+			  }
+		  } else {//parent pro
+				//print pid number and add to the list.
+			  //note:if we use & we need to delete it first before operation.
 				printf("%d\n",value);
 				if(strcmp(arrayArgs[i - 1], "&") == 0) {
 					//delete the sigh.
 					copy[strlen(copy) - 1] = 0;
 					copy[strlen(copy) - 1] = 0;
 					addToList(&list, value, copy, strlen(copy));
+
 				} else {
 					addToList(&list, value, copy, strlen(copy));
-					wait(value);
+					val=getpid();
+					wait(&val);
 				}
 		   }
 		}
 		//clear the list
-		for(int j=0; j < i; j++){
+ 	for(int j=0; j < i; j++){
 			arrayArgs[i] = 0;
 		}
 	}
-//free the memory
-	free(arrayArgs);
 
+//free the memory
 	return 0;
 }
 
+
+
+/**
+ * This function gets pointer to the jobs list, pid value to add,
+ * name of job and size.
+ * its allocate memmory to the name and whole job
+ * and add to the linked list.
+ *
+ */
 void addToList(JOB** list, pid_t pid, char* name, int size) {
 	JOB* new_node = (JOB*)malloc(sizeof(JOB));
+	if(new_node == NULL) {
+		fprintf(stderr, "Error in system call\n");
+		return;
+	}
 	new_node->name  = malloc(size);
 	if(new_node->name == NULL) {
+		fprintf(stderr, "Error in system call\n");
 		return;
 	}
 	//copy info
 	 int i;
 	 for (i=0; i<size; i++)
-	        *(char *)(new_node->name + i) = *(char *)(name + i);
+		 *(char *)(new_node->name + i) = *(char *)(name + i);
+
 	 if(*list != NULL) {
 		 new_node->nextJob = *list;
 		 new_node->head = 1;
@@ -147,52 +151,89 @@ void addToList(JOB** list, pid_t pid, char* name, int size) {
 	 new_node->val = (int) pid;
 }
 
+/**
+ * get a pointer of the list jobs.
+ * go over the list and delete process that ended.
+ * each move save prev value to update if its next node deleted.
+ */
 void refreshList(JOB** list) {
-	JOB* temp = *list, *temp2, *prev;
-
-	  while (temp != NULL) {
-		 // check if the job ended? and delete from list.
-		  if((waitpid(temp->val, NULL, WNOHANG)) !=0) {
-			  //update the head
-			  if(temp->head == 1) {
-				  *list = temp->nextJob;
-				  if(*list != NULL){
-					  temp->nextJob->head = 1;
+	JOB* buff = *list, *buff2, *prev = NULL;
+	//buff2 is temp buffer.
+	while (buff != NULL) {
+	// check if the job ended? and delete from list.
+		if((waitpid(buff->val, NULL, WNOHANG)) != 0) {
+			//update the head
+			if(buff->head == 1) {
+				*list = buff->nextJob;
+				if(*list != NULL){
+					buff->nextJob->head = 1;
 				  }
 			  }
-			  temp2 = temp;
-			  temp = temp->nextJob;
-			  prev->nextJob = temp2->nextJob;
-			  free(temp2->name);
-			  free(temp2);
-		  }else {
-			prev = temp;
-		  temp = temp->nextJob;
+			buff2 = buff;
+			buff = buff->nextJob;
+			if(prev != NULL)//if its not the head
+				prev->nextJob = buff2->nextJob;
+			free(buff2->name);
+			free(buff2);
+		}else {
+			prev = buff;
+		  buff = buff->nextJob;
 		  }
 	    }
 }
-
+/**
+ * delete all memory from the list
+ */
 void deleteAll(JOB** list) {
-	JOB* temp = *list;
-	JOB* temp2;
-	  while (temp != NULL)
-	  {
-		  temp2 = temp;
-		  temp = temp->nextJob;
-		  free(temp->name);
-		  free(temp2);
-	    }
+	JOB* buff = *list;
+	JOB* buff2;
+	while (buff != NULL) {
+		buff2 = buff;
+		buff = buff->nextJob;
+		free(buff2->name);
+		free(buff2);
+  }
 }
-
+/**
+ * print the job list
+ */
 void printList(JOB** list) {
-	JOB* temp;
+	JOB* buff;
 	if(list != NULL) {
-		temp = *list;
-		  while (temp != NULL)
-		  {
-			  printf("%d \t %s\n", temp->val, temp->name);
-			  temp = temp->nextJob;
-		    }
+		buff = *list;
+	  while (buff != NULL) {
+		  printf("%d \t %s\n", buff->val, buff->name);
+			buff = buff->nextJob;
+	  }
+	}
+}
+/**
+ * execute all cd operations.
+ * node:save last path for cd - operation.
+ * word[1] is the second input of user: could be .. - ~
+ *path or else zero.
+ */
+void checkCd(char* string, char* pathDirection[]) {
+	static char lastPath[1000];
+	if(pathDirection[1] == 0) {
+		getcwd(lastPath, SIZE);
+		if(chdir(getenv("HOME")) < 0)
+				fprintf(stderr, "SError in system call\n");
+	}	else if(strcmp(pathDirection[1], "..")==0) {
+		getcwd(lastPath, SIZE);
+		if(chdir(pathDirection[1]) < 0)
+			fprintf(stderr, "Error in system call\n");
+	} else if(strcmp(pathDirection[1], "~")==0) {
+		getcwd(lastPath, SIZE);
+		if(chdir(getenv("HOME")))
+			fprintf(stderr, "Error in system call\n");
+	} else if(strcmp(pathDirection[1], "-")==0) {
+		strcpy(pathDirection[1], lastPath);
+		checkCd(string, pathDirection);//use last path
+	} else {//regular path: cd /path
+		getcwd(lastPath, SIZE);
+		if(chdir(pathDirection[1]))
+			fprintf(stderr, "Error in system call\n");
 	}
 }
 
