@@ -22,7 +22,7 @@ int IsSpace(char c);
 
 
 int main (int argc, char* argv[]){
-
+	char errorString[] = "Error in system call\n";
 	char fBuff = 0,sBuff = 0;
 	int checking = true, endFirst = false, endSecond = false;
 	int firstFileDes, secondFileDes;//file disacriprors.
@@ -32,15 +32,15 @@ int main (int argc, char* argv[]){
 	int n = 0;
 //if the input dint have to strings.
 	if (argc <= 1) {
-		fprintf(stderr, "usage: %s output_file\n", argv[0]);
+		write(2, errorString, strlen(errorString)+1);
 		exit(-1);
 	}
 	if((firstFileDes=open(argv[1],O_RDONLY))==-1) {
-		fprintf(stderr, "Error in system call\n");
+		write(2, errorString, strlen(errorString)+1);
 		exit(-1);
 	}
 	if((secondFileDes=open(argv[2],O_RDONLY))==-1) {
-		fprintf(stderr, "Error in system call\n");
+		write(2, errorString, strlen(errorString)+1);
 		exit(-1);
 	}
 
@@ -49,13 +49,14 @@ int main (int argc, char* argv[]){
 		if((!endFirst) && (readFirst)) {//if its not the end of file or we need to read:
 			if((n =read(firstFileDes,&fBuff,sizeof(fBuff)))<=0) {
 				if(n == 0) endFirst = true;//if we read 0 bytes means its the end
-				else fprintf(stderr, "Error in system call\n");
+				else write(2, errorString, strlen(errorString)+1);
+
 			}
 		}
 		if((!endSecond) && readSecond) {//if its not the end of file or we need to read:
 			if((n=read(secondFileDes,&sBuff,sizeof(sBuff)))<=0){
 				if(n == 0)endSecond = true;//if we read 0 bytes means its the end
-				else fprintf(stderr, "Error in system call\n");
+				else write(2, errorString, strlen(errorString)+1);
 			}
 		}
 		//if we get to the end of both files-stop the loop.
