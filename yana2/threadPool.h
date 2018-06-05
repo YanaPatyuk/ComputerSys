@@ -18,13 +18,17 @@ typedef struct thread_pool
  int numberOfThreads;
  //task list
  OSQueue* taskQueue;
- //args for task
- OSQueue* taskQueueArgs;
 
  //threads array
  pthread_t * threads;
- bool destroy;
+  int destroy;
 }ThreadPool;
+
+typedef struct task
+{
+ void(*func)(void *);
+ void* args;
+}Task;
 
 ThreadPool* tpCreate(int numOfThreads);
 
