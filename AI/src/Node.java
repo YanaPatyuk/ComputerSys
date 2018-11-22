@@ -6,22 +6,21 @@ public class Node {
 	private Directions dir;
 	private BoardTails state;
 	private int depth;
+	private int numberOfNode;
 	/**
-	 * regular
-	 * @param value
-	 * @param father
-	 * @param a
-	 * @param currentState
+	 * Constructor
+	 * @param father of the node
+	 * @param a witch direction to go.
+	 * @param currentState fathers state.
 	 */
-	public Node(Node father, Directions a,BoardTails currentState) {
+	public Node(Node father, Directions a,BoardTails currentState, int num) {
 			this.children = new Node[4];
 			this.father = father;
 			this.dir = a;
 			this.state = new BoardTails(currentState, dir);
-			//if(this.state.equals(null)) this.value = -1;
 			if(!this.state.boardExist()) this.value = -1;
 			this.depth = 0;
-			//else setValue(this.state);
+			this.numberOfNode = num;
 	}
 	/**
 	 * Const' for first node.
@@ -45,17 +44,21 @@ public class Node {
 	 * @param c
 	 * @param d
 	 */
-	public void setChildens() {
+	public void setChildens(int n) {
 		BoardTails copy = new BoardTails(this.state, Directions.NULL);
-		this.children[0] = new Node(this, Directions.UP, copy);
-		this.children[1] = new Node( this,Directions.DOWN, copy);
-		this.children[2] = new Node( this, Directions.LEFT, copy);
-		this.children[3] = new Node( this, Directions.RIGHT,copy);
+		this.children[0] = new Node(this, Directions.UP, copy, n + 1);
+		this.children[1] = new Node( this,Directions.DOWN, copy, n+2);
+		this.children[2] = new Node( this, Directions.LEFT, copy,n+3);
+		this.children[3] = new Node( this, Directions.RIGHT,copy,n+4);
+		//set children's depth
 		for(int i = 0; i < 4; i++) {
 		 this.children[i].setDepth(this.depth + 1);
 		}
 	}
-	
+	/**
+	 * set values for each child.
+	 * @param solution
+	 */
 	public void setValuesForChildren(BoardTails solution) {
 		for(int i = 0; i < 4; i++) {
 			this.children[i].setValue(solution);
@@ -89,7 +92,9 @@ public class Node {
 		if(value == -1) return false;
 		return true;
 	}
-	
+	/**
+	 * @return node's athers move.
+	 */
 	public String getFathersDir() {
 		if(this.father == null) return "";
 		return this.father.getFathersDir() + Directions.getLetter(this.dir);
@@ -104,11 +109,20 @@ public class Node {
 	 * @return depth of node.
 	 */
 	public int getDepth() { return this.depth; }
-	
+	/**
+	 * set the cost.
+	 * @param sateGoal
+	 */
 	public void setValue(BoardTails sateGoal) {
 		if(this.value != -1)
 			this.value = this.state.calculateBoardCost(sateGoal) + this.depth;
 	}
-	
+	/**
+	 * @return cost of the node
+	 */
 	public int getCostOfNode() { return this.value; }
+	
+	public int getNumberOfNode() {
+		return numberOfNode;
+	}
 }

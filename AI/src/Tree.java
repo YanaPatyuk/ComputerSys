@@ -30,7 +30,7 @@ public class Tree {
 	 * @return next Node to work on.
 	 */
 	public Node popNode() {
-		return this.openList.remove();
+		return this.openList.poll();
 	}
 	/**
 	 * @param n node of solution state

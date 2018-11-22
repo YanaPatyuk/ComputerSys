@@ -1,29 +1,24 @@
 
 public class BoardTails {
-	private Integer [] solution;
 	private Integer [][] board;
 	private int size; 
 	private int cost;
+	/**
+	 * constuctor for board.
+	 * @param board array from file
+	 * @param size size of board
+	 */
 	public BoardTails(String [] board, int size) {
-		int i;
 		this.size = size;
-		this.solution = new  Integer[size*size];
-		int numberOfBloks= (size*size) - 1;
-		for(i = 1; i < numberOfBloks; i++) {
-			this.solution[i] = i;
-		}
-		this.solution[i] = 0;
-		this.board = createBoard(board);
-		
+		this.board = createBoard(board);//get board
 	}
 	/**
 	 * copy and change constructor
-	 * @param b
-	 * @param change
+	 * @param b board to copy
+	 * @param change what direction.
 	 */
 	public BoardTails(BoardTails b, Directions change) {
 		this.size = b.size;
-		this.solution = b.solution;
 		this.board = new Integer[size][size];
 		copy(this.board,b.board,this.size);
 		if(change.equals(Directions.FIRST)||change.equals(Directions.NULL)) return;
@@ -42,13 +37,15 @@ public class BoardTails {
 	}
 	/**
 	 * move the tail and update board
+	 * if the move not legal-return false. any other case true
 	 * @param move direction
 	 */
 	public boolean moveTail(Directions move) {
 		for(int i = 0; i < size; i++) {
 			for(int j = 0;j<size;j++) {
 				if(this.board[i][j] == 0) {
-					if(!isLigal(move,i,j)) return false;
+					//if the move id legal continue 
+					if(!isLegal(move,i,j)) return false;
 					if(move.equals(Directions.UP)) {
 						this.board[i][j] = this.board[i+1][j];
 						this.board[i+1][j] = 0;
@@ -68,8 +65,14 @@ public class BoardTails {
 		}
 		return false;
 	}
-	
-	public boolean isLigal(Directions move, int i, int j) {
+	/**
+	 * check if the move is correct
+	 * @param move
+	 * @param i of 0 x place
+	 * @param j of 0 y place.
+	 * @return true if you can move.
+	 */
+	public boolean isLegal(Directions move, int i, int j) {
 		if(this.board[i][j] == 0) {
 			if(move.equals(Directions.UP)) {
 				if((i+1) >= this.size) return false;
@@ -82,7 +85,7 @@ public class BoardTails {
 			}
 			return true;
 			}
-			return false;
+		return false;
 	}
 	/**
 	 * copy board b to board a
@@ -152,32 +155,24 @@ public class BoardTails {
 		this.cost = 0;
 		for(int j=0;j<size;j++) {
 			for(int z = 0;z < size; z++) {
-					if(this.board[j][z] != 0)
-						this.cost += getDistance(j,z, this.board[j][z], other);
+					if(this.board[j][z] != 0)//no need to calculate zero
+						this.cost += getDistance(j,z, this.board[j][z]);
 				}
 		}
 		return this.cost;
 	}
 	/**
 	 * calculate distance between current cell to its palce on other board.
-	 * @param x val
-	 * @param y val
+	 * first-calculate the place that the cell should be.
+	 * @param x val current place
+	 * @param y val current place
 	 * @param i value of cell
-	 * @param other - end state board
 	 * @return
 	 */
-	private int getDistance(int x, int y, Integer i, BoardTails other) {
-		int l = (i-1)/size;
-		int m = (i - 1)%size;
-		return Math.abs(l - x) + Math.abs(y-m);
-		/*for(int j=0;j<size;j++) {
-			for(int z = 0;z < size; z++) {
-				if(i.equals(other.board[j][z])) {
-					return Math.abs(j - x) + Math.abs(y-z);
-				}
-			}*/
-		//}
+	private int getDistance(int x, int y, Integer i) {
+		int xCurrect = (i-1)/size;
+		int yCorrect = (i - 1)%size;
+		return Math.abs(xCurrect - x) + Math.abs(y-yCorrect);
 	}
 
-	
 }

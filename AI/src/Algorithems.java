@@ -1,4 +1,6 @@
-
+/*
+ * Enum fot algorithem Types
+ */
 public enum Algorithems {
 	IDS, BFS, ASTAR;
 	public static Algorithems getAlgo(String type) {

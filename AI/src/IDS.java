@@ -1,76 +1,59 @@
+import java.util.Stack;
 
-public class IDS implements Algorithm {
-	private BoardTails board;
-	private BoardTails solution;
-	private TreeLIFO tree;
-	private int numOfNodes;
-	private int depth;
+public class IDS extends AbstructAlgo {
+	private  Stack<Node> openList;
+	private Node head;
+
 	public IDS(BoardTails board) {
-		this.board = board;
-		this.tree = new TreeLIFO(board);
-		//create solution board to compare with
-		int numberOfBloks= (board.getSize()*board.getSize());
-		String []sol = new String[numberOfBloks];
-		int i;
-		for(i = 1; i < numberOfBloks; i++) {
-			sol[i-1] = "" + Integer.toString(i);
-		}
-		sol[i-1] =  "0";
-		this.solution = new BoardTails(sol, this.board.getSize());
-	}
-	@Override
-	public String getTrackOfWay() {
-		return this.tree.getLastNode().getFathersDir();
-	}
-
-	@Override
-	public int cost() {
-		return this.depth;
-	}
-
-	@Override
-	public int getNumberOfNodes() {
-		return this.numOfNodes;
+		super(board);
+		this.head = new Node(Directions.FIRST,board);
+		this.head.setDepth(0);
+		this.openList = new Stack<Node>();
+		this.openList.push(this.head);
 	}
 
 	@Override
 	public void solveTheGame() {
 		int depth  = 0;
 		int currentDepth = 0;
-		boolean run = true;
 		Node current = null;
 		Node []chliderns;
 		this.numOfNodes = 0;
-		solution.printBoard();
-		while(true) {
-			while(this.tree.isEmpty()) {
-				current = this.tree.popNode();
+		while(true) {//we assume that we will find an answer.
+			while(!this.openList.isEmpty()) {
+				//get next node
+				current = this.openList.pop();
 				currentDepth = current.getDepth();
 				this.numOfNodes++;
-				//if(currentDepth > depth) continue;
+				//if this is the answer-stop
 				if(current.getNodeSateBoard().isEquel(solution)) {
 					break;
-				} 
-				if(currentDepth == depth) continue;
-				current.setChildens();
-				chliderns = current.getChildrens();
-				if(chliderns[3].exsist()) this.tree.addNode(chliderns[3]);
-				if(chliderns[2].exsist()) this.tree.addNode(chliderns[2]);
-				if(chliderns[1].exsist()) this.tree.addNode(chliderns[1]);
-				if(chliderns[0].exsist()) this.tree.addNode(chliderns[0]);
 				}
+				//if this node in the end of the depth-continue to next
+				if(currentDepth == depth) continue;
+				//create node's children and add them.
+				current.setChildens(0);
+				chliderns = current.getChildrens();
+				if(chliderns[3].exsist()) this.openList.push(chliderns[3]);
+				if(chliderns[2].exsist()) this.openList.push(chliderns[2]);
+				if(chliderns[1].exsist()) this.openList.push(chliderns[1]);
+				if(chliderns[0].exsist()) this.openList.push(chliderns[0]);
+				}
+			//if this is the solution-stop/
 			if(current.getNodeSateBoard().isEquel(solution)) break;
-			this.tree.resetTree();
+			//reset the tree and add 1 for depth
+			this.openList.clear();
+			this.openList.push(head);
 			depth++;
 			this.numOfNodes = 0;
 		}
-		this.tree.setLastNode(current);
+		this.lastNode = current;
 	}
 
 	@Override
 	public String getFullAnswer() {
-		return this.tree.getLastNode().getFathersDir()+ " " +
-						getNumberOfNodes() + " " + this.tree.getLastNode().getDepth();
+		return this.lastNode.getFathersDir()+ " " +
+						getNumberOfNodes() + " " + this.lastNode.getDepth();
 	}
 
 }
