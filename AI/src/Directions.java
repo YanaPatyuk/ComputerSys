@@ -1,4 +1,7 @@
-
+/**
+ * @author Yana Patyuk
+ * Enum for moves
+ */
 public enum Directions {
 	FIRST,UP,DOWN,LEFT,RIGHT, NULL;
 	

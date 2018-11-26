@@ -6,7 +6,7 @@ public enum Algorithems {
 	public static Algorithems getAlgo(String type) {
 		switch(Integer.parseInt(type) - 1) {
 	 	case 0:
-				return IDS;
+			return IDS;
 	    case 1:
 	      return BFS;
 	    case 2:

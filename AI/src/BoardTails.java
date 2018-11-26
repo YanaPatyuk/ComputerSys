@@ -1,4 +1,9 @@
-
+/**
+ * this class is the Board of the game.
+ * it manual all the moves and data about each board.
+ * @author Yana Patyuk
+ *
+ */
 public class BoardTails {
 	private Integer [][] board;
 	private int size; 
@@ -21,7 +26,9 @@ public class BoardTails {
 		this.size = b.size;
 		this.board = new Integer[size][size];
 		copy(this.board,b.board,this.size);
+		//if its the fisrt node or NULL return.
 		if(change.equals(Directions.FIRST)||change.equals(Directions.NULL)) return;
+		//if moving is incorrect-board null
 		if(!moveTail(change)) this.board = null;
 	}
 	/**
@@ -148,7 +155,7 @@ public class BoardTails {
 	 */
 	public int getCost() { return this.cost; }
 	/**
-	 * F function to calculate how many steps are may be till end
+	 * H function to calculate how many steps are may be till end
 	 * @param other solution board(end state)
 	 */
 	public int calculateBoardCost(BoardTails other) {
@@ -156,20 +163,21 @@ public class BoardTails {
 		for(int j=0;j<size;j++) {
 			for(int z = 0;z < size; z++) {
 					if(this.board[j][z] != 0)//no need to calculate zero
-						this.cost += getDistance(j,z, this.board[j][z]);
+						this.cost += getManhetenDistance(j,z, this.board[j][z]);
 				}
 		}
 		return this.cost;
 	}
 	/**
+	 * this is h(x) 
 	 * calculate distance between current cell to its palce on other board.
 	 * first-calculate the place that the cell should be.
 	 * @param x val current place
 	 * @param y val current place
 	 * @param i value of cell
-	 * @return
+	 * @return distance.
 	 */
-	private int getDistance(int x, int y, Integer i) {
+	private int getManhetenDistance(int x, int y, Integer i) {
 		int xCurrect = (i-1)/size;
 		int yCorrect = (i - 1)%size;
 		return Math.abs(xCurrect - x) + Math.abs(y-yCorrect);

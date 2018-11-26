@@ -1,6 +1,6 @@
 import java.util.Stack;
 
-public class IDS extends AbstructAlgo {
+public class IDS extends AbstractAlgo {
 	private  Stack<Node> openList;
 	private Node head;
 

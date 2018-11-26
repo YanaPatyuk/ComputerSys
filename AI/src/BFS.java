@@ -1,13 +1,15 @@
 import java.util.LinkedList;
 import java.util.Queue;
-
-public class BFS extends AbstructAlgo {
+/**
+ * BFS algo
+ * @author Yana Patyuk
+ */
+public class BFS extends AbstractAlgo {
 	private Queue<Node> openList;
 	private Node head;
 	
 	public BFS(BoardTails board) {
 		super(board);
-		//this.tree = new Tree(board);
 		this.openList = new LinkedList<Node>();
 		this.head = new Node(Directions.FIRST,board);
 		this.head.setDepth(0);

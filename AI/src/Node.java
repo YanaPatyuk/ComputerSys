@@ -1,4 +1,7 @@
-
+/**
+ * @author Yana Patyuk
+ *Node in tree. represent current board state.
+ */
 public class Node {
 	private Node father;
 	private Node[] children;
@@ -6,7 +9,7 @@ public class Node {
 	private Directions dir;
 	private BoardTails state;
 	private int depth;
-	private int numberOfNode;
+	private int numberOfNode;//counter to know when node created(each node gets a number)
 	/**
 	 * Constructor
 	 * @param father of the node
@@ -17,7 +20,9 @@ public class Node {
 			this.children = new Node[4];
 			this.father = father;
 			this.dir = a;
+			//create state from given board and direction to move
 			this.state = new BoardTails(currentState, dir);
+			//if state null means move incorrect.
 			if(!this.state.boardExist()) this.value = -1;
 			this.depth = 0;
 			this.numberOfNode = num;
@@ -33,6 +38,7 @@ public class Node {
 			this.dir = a;
 			this.state = new BoardTails(currentState, dir);
 			this.father = null;
+			//if state null means move incorrect.
 			if(!this.state.boardExist()) this.value = -1;
 			this.depth = 0;
 			//else setValue(this.state);
@@ -110,7 +116,10 @@ public class Node {
 	 */
 	public int getDepth() { return this.depth; }
 	/**
-	 * set the cost.
+	 * set the cost
+	 * means F = g+h
+	 * where g is the path till this node from first node(depth)
+	 * and h is manheten distance(calculateBoardCost)
 	 * @param sateGoal
 	 */
 	public void setValue(BoardTails sateGoal) {
@@ -121,7 +130,9 @@ public class Node {
 	 * @return cost of the node
 	 */
 	public int getCostOfNode() { return this.value; }
-	
+	/**
+	 * @return when node created
+	 */
 	public int getNumberOfNode() {
 		return numberOfNode;
 	}

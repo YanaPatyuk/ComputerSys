@@ -1,8 +1,11 @@
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.PriorityQueue;
-
-public class ASTAR extends AbstructAlgo {
+/**
+ * A* algo.
+ * @author Yana Patyuk
+ *
+ */
+public class ASTAR extends AbstractAlgo {
 	//private TreeLIFO tree;
 	private PriorityQueue<Node> openList;
 	private Node head;
@@ -12,7 +15,6 @@ public class ASTAR extends AbstructAlgo {
 	 */
 	public ASTAR(BoardTails board) {
 		super(board);
-		//this.tree = new TreeLIFO(board);
 		this.openList = new PriorityQueue<Node>(new Distance());
 		this.head = new Node(Directions.FIRST,board);
 		this.head.setDepth(0);
@@ -63,8 +65,10 @@ public class ASTAR extends AbstructAlgo {
 		@Override
 		public int compare(Node arg0, Node arg1) {
 			// TODO Auto-generated method stub
+			//if arg0 node cost(f function value) same as arg1-return witch one created first.
 			if(arg0.getCostOfNode() - arg1.getCostOfNode() == 0)
 				return arg0.getNumberOfNode()-arg1.getNumberOfNode();
+			//else return which one f value bigger
 			return arg0.getCostOfNode() - arg1.getCostOfNode();
 		}
 	}
