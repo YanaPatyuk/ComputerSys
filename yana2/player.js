@@ -7,12 +7,6 @@ var s = document.createElement("script");
 s.src = url;
 document.head.appendChild(s);
 
-let urls = 'snippet:///Script%20snippet%20%231'
-var s = document.createElement("script");
-s.src = url;
-document.head.appendChild(s);
-var tipList;
-var currentTip;
 
 
 
